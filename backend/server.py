@@ -48,7 +48,9 @@ def handle_join_game_ws(data):
 
 @socketio.on("update_game")
 def handle_update_game(data):
+    print("recieved game update")
     game_id = data["game_id"]
+    print(data)
     state = data["state"]
     games[game_id]["state"] = state
     emit("update_state", state, room=game_id)

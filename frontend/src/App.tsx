@@ -7,7 +7,7 @@ const SOCKET_SERVER_URL = "http://localhost:5600";
 export default function App() {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [gameId, setGameId] = useState<string | null>(null);
-    // const [gameState, setGameState] = useState<any | null>(null);
+    const [gameState, setGameState] = useState<any | null>(null);
 
     async function createGame() {
         console.log("create game");
@@ -50,10 +50,6 @@ export default function App() {
         const newSocket = io("http://localhost:5600");
         setSocket(newSocket);
 
-        // newSocket.on('update_state', (state: any) => {
-        //     setGameState(state);
-        // });
-
         return () => {
             newSocket.disconnect();
         };
@@ -71,9 +67,28 @@ export default function App() {
         }
     }
 
+    // Update state based on response
+    useEffect(() => {
+        if (socket) {
+            socket.on("update_state", (data) => {
+                console.log("update_state", data);
+                setGameState(data);
+            });
+        }
+    }, [socket]);
+
+    function sendMessage() {
+        if (socket) {
+            console.log("sent message");
+            socket.emit("update_game", { game_id: gameId, state: "Test state" });
+        }
+    }
+
     return (
-        <div>
-            <h1>Active game: {gameId ? gameId : "no game id"}</h1>
+        <div className="flex flex-col">
+            <h1>
+                Active game: {gameId ? gameId : "no game id"} | Socket connected: {socket?.connected}
+            </h1>
             <button
                 onClick={() => {
                     void createGame();
@@ -89,6 +104,13 @@ export default function App() {
             >
                 Join game
             </button>
+            <hr />
+            <div className="mt-11">
+                <h2>Game state:</h2>
+                <pre>{JSON.stringify(gameState, null, 2)}</pre>
+                <input type="text" className="bg-gray-200" />
+                <button onClick={() => sendMessage()}>Emit message</button>
+            </div>
         </div>
     );
 }
