@@ -19,6 +19,15 @@ class Game:
         self.player2 = Player()
         self.state = "waiting"
 
+    def get_player(self, player_id):
+        """Retrieve the player instance based on the player_id."""
+        if player_id == "player1":
+            return self.player1
+        elif player_id == "player2":
+            return self.player2
+        else:
+            raise ValueError(f"Invalid player_id: {player_id}")
+
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -93,44 +102,43 @@ def handle_join_game_ws(data):
 
     join_room(game_id)
     emit("player_assignment", current_player)
-    emit("update_board", current_game.player1.board)  # TODO: Adjust this based on your game logic
 
 @socketio.on("hit_cell")
 def handle_hit_cell(data):
     game_id = data["game_id"]
-    player = "player1" if request.sid == games[game_id]["player1"]["player_id"] else "player2" # Determine which player sent the hit request
+    current_game = games[game_id]
+    
+    player = "player1" if request.sid == current_game.get_player("player1").player_id else "player2"
     x, y = data["coordinates"]["x"], data["coordinates"]["y"]
 
     print("Player", player, "hit cell", x, y)
 
     # Retrieve opponent
-    if player == "player1":
-        opponent = "player2"
-    else:
-        opponent = "player1"
-    
-    # TODO: remove this which always hits player1 board
-    opponent = "player1"
+    opponent = "player2" if player == "player1" else "player1"
 
     # Check the opponent's board at the given cell coordinates
-    cell_value = games[game_id][opponent]["board"][x][y]
+    cell_value = current_game.get_player(opponent).board[x][y]
+    
     if cell_value == "ship":
         print("Hit!")
-        games[game_id][opponent]["board"][x][y] = "hit"
-        games[game_id][opponent]["hits"].append((x, y))
+        current_game.get_player(opponent).board[x][y] = "hit"
+        current_game.get_player(opponent).hits.append((x, y))
         result = "hit"
     else:
         print("Missed!")
-        games[game_id][opponent]["board"][x][y] = "miss"
-        games[game_id][opponent]["misses"].append((x, y))
+        current_game.get_player(opponent).board[x][y] = "miss"
+        current_game.get_player(opponent).misses.append((x, y))
         result = "miss"
 
-    # Notify players of the hit result
-    # Will probably send just the cell coordinates and result to the client to save bandwidth
-    #emit("hit_result", {"player": player, "coordinates": (x, y), "result": result}, room=game_id)
+    # Prepare the boards for sending to the client
+    update_board = {
+        "player1": current_game.get_player("player1").board,
+        "player2": current_game.get_player("player2").board
+    }
+    
+    emit("update_board", update_board, room=game_id)
 
-    # send player 1 board to both players
-    emit("update_board", games[game_id]["player1"]["board"], room=game_id)
+
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5600)

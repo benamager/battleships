@@ -99,13 +99,17 @@ export default function App() {
     useEffect(() => {
         if (socket) {
             socket.on("update_board", (data) => {
-                console.log("update_board", data);
+                const { player1, player2 } = data;
                 // update gameState for player1 board
                 setGameState((prevState) => ({
                     ...prevState,
                     player1: {
                         ...prevState.player1,
-                        board: data,
+                        board: player1,
+                    },
+                    player2: {
+                        ...prevState.player2,
+                        board: player2,
                     },
                 }));
             });
@@ -149,6 +153,7 @@ export default function App() {
             <hr />
             <div className="flex gap-4">
                 <GameBoard board={gameState.player1.board} hitCell={hitCell} />
+                <GameBoard board={gameState.player2.board} hitCell={hitCell} />
             </div>
         </div>
     );
