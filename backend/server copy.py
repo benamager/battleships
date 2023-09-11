@@ -1,29 +1,8 @@
-class Cell:
-    EMPTY = "empty"
-    SHIP = "ship"
-    HIT = "hit"
-    MISS = "miss"
-
-class Player:
-    def __init__(self):
-        self.board = [[Cell.EMPTY for _ in range(10)] for _ in range(10)]
-        self.ships = []
-        self.hits = []
-        self.misses = []
-        self.ready = False
-        self.player_id = None
-
-class Game:
-    def __init__(self):
-        self.player1 = Player()
-        self.player2 = Player()
-        self.state = "waiting"
-
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room
 import uuid
+
 import random
 import string
 
@@ -31,6 +10,7 @@ import string
 def generate_short_id(length=5):
     characters = string.ascii_letters + string.digits
     return "".join(random.choice(characters) for i in range(length))
+
 
 # Function to generate the board, which is a 10x10 grid of cells
 # Each cell is represented by a string, which can be one of the following:
@@ -43,20 +23,42 @@ def generate_board():
     board = [['empty' for _ in range(10)] for _ in range(10)]
     return board
 
+
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # This will enable CORS for all routes
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 print("Server started")
 
-games = {}  # This remains the same
+# Games" data storage: game_id => game_state
+games = {}
 
+# Endpoint to create a new game
 @app.route("/create_game", methods=["POST"])
 def create_game():
-    game_id = str(generate_short_id())
-    games[game_id] = Game()  # Create a new Game object
+    game_id = str(generate_short_id()) # Generate a random game ID
+
+    # Set the initial state of the game in the games dictionary
+    games[game_id] = {
+      "player1": {
+        "board": generate_board(),
+        "ships": [], # For faster lookup
+        "hits": [],
+        "misses": [], 
+        "ready": False
+      },
+      "player2": {
+        "board": generate_board(),
+        "ships": [],
+        "hits": [],
+        "misses": [],
+        "ready": False
+      },
+      "state": "waiting" # Possible states: waiting, placing, playing, finished
+    }
+
     print("Created game with ID:", game_id)
-    return jsonify({"game_id": game_id})
+    return jsonify({"game_id": game_id}) # Return the game ID to client to join
 
 # Endpoint to join an existing game by ID
 @app.route("/join_game/<game_id>", methods=["POST"])
@@ -75,25 +77,28 @@ def handle_connect():
 def handle_join_game_ws(data):
     game_id = data["game_id"]
     
+    # Check if game_id is valid
     if game_id not in games:
         emit("error", {"error": "Invalid game ID."})
         return
 
-    current_game = games[game_id]
-    current_player = None
-    if not current_game.player1.player_id:
-        current_game.player1.player_id = request.sid
+    # Assign player based on the current state of the game
+    if not games[game_id]["player1"].get("player_id"):
+        games[game_id]["player1"]["player_id"] = request.sid  # Assigning the current Socket.IO session ID as the player ID
         current_player = "player1"
-    elif not current_game.player2.player_id:
-        current_game.player2.player_id = request.sid
+    elif not games[game_id]["player2"].get("player_id"):
+        games[game_id]["player2"]["player_id"] = request.sid
         current_player = "player2"
     else:
+        # Both player spots are occupied
         emit("error", {"error": "Game room is full."})
         return
 
     join_room(game_id)
-    emit("player_assignment", current_player)
-    emit("update_board", current_game.player1.board)  # TODO: Adjust this based on your game logic
+    emit("player_assignment", current_player)  # Informing the client of their player designation (either player1 or player2)
+    # TODO: not always send player1's board
+    emit("update_board", games[game_id]["player1"]["board"]) # Send the board to the client
+
 
 @socketio.on("hit_cell")
 def handle_hit_cell(data):
@@ -126,11 +131,12 @@ def handle_hit_cell(data):
         result = "miss"
 
     # Notify players of the hit result
-    # Will probably send just the cell coordinates and result to the client to save bandwidth
+    # Will probably send just the cell coordinates and result to the client
     #emit("hit_result", {"player": player, "coordinates": (x, y), "result": result}, room=game_id)
 
     # send player 1 board to both players
     emit("update_board", games[game_id]["player1"]["board"], room=game_id)
+
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5600)
