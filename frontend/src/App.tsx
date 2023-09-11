@@ -1,13 +1,32 @@
 import axios, { AxiosResponse } from "axios";
 import { useState, useEffect } from "react";
 import io, { Socket } from "socket.io-client";
+import GameBoard from "./components/GameBoard";
+import { Board, Cell, GameState, PlayerState } from "./types/GameBoard";
 
 const SOCKET_SERVER_URL = "http://localhost:5600";
 
 export default function App() {
     const [socket, setSocket] = useState<Socket | null>(null);
     const [gameId, setGameId] = useState<string | null>(null);
-    const [gameState, setGameState] = useState<any | null>(null);
+    const initialBoard: Board = Array(10).fill(Array(10).fill("empty" as Cell));
+
+    const initialPlayerState: PlayerState = {
+        board: initialBoard,
+        hits: 0,
+        misses: 0,
+    };
+
+    const initialGameState: GameState = {
+        player1: { ...initialPlayerState },
+        player2: { ...initialPlayerState },
+        currentPlayer: null,
+        gameStatus: "waiting",
+    };
+
+    const [gameState, setGameState] = useState<GameState>(initialGameState);
+
+    console.log(gameState);
 
     async function createGame() {
         console.log("create game");
@@ -15,7 +34,6 @@ export default function App() {
         try {
             const response: AxiosResponse<{ game_id: string }> = await axios.post("http://localhost:5600/create_game", "test");
 
-            // Assuming the response contains the game ID or some other relevant data, set it to state
             if (response.data) {
                 setGameId(response.data.game_id);
                 joinGameSocket(response.data.game_id);
@@ -70,24 +88,48 @@ export default function App() {
     // Update state based on response
     useEffect(() => {
         if (socket) {
-            socket.on("update_state", (data) => {
-                console.log("update_state", data);
-                setGameState(data);
+            socket.on("player_assignment", (data) => {
+                console.log("player_assignment", data);
+                setGameState((prevState) => ({ ...prevState, currentPlayer: data }));
             });
         }
     }, [socket]);
 
-    function sendMessage() {
+    //Update state based on response
+    useEffect(() => {
         if (socket) {
-            console.log("sent message");
-            socket.emit("update_game", { game_id: gameId, state: "Test state" });
+            socket.on("update_board", (data) => {
+                console.log("update_board", data);
+                // update gameState for player1 board
+                setGameState((prevState) => ({
+                    ...prevState,
+                    player1: {
+                        ...prevState.player1,
+                        board: data,
+                    },
+                }));
+            });
+        }
+    }, [socket]);
+
+    function hitCell(row: number, col: number) {
+        console.log("hitCell", row, col);
+        if (socket) {
+            socket.emit("hit_cell", {
+                game_id: gameId,
+                coordinates: {
+                    x: row,
+                    y: col,
+                },
+            });
         }
     }
 
     return (
         <div className="flex flex-col">
             <h1>
-                Active game: {gameId ? gameId : "no game id"} | Socket connected: {socket?.connected}
+                Active game: {gameId ? gameId : "no game id"} <br />
+                Socket connected: {socket?.active ? "true" : "false"} <br /> Player assignment: {gameState.currentPlayer}
             </h1>
             <button
                 onClick={() => {
@@ -105,11 +147,8 @@ export default function App() {
                 Join game
             </button>
             <hr />
-            <div className="mt-11">
-                <h2>Game state:</h2>
-                <pre>{JSON.stringify(gameState, null, 2)}</pre>
-                <input type="text" className="bg-gray-200" />
-                <button onClick={() => sendMessage()}>Emit message</button>
+            <div className="flex gap-4">
+                <GameBoard board={gameState.player1.board} hitCell={hitCell} />
             </div>
         </div>
     );

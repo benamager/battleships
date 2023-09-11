@@ -19,3 +19,5 @@ Lets start by covering the basics.
 
 
 What I'll do now is start by building the fundamentals.
+
+[SHOW VIDEO]

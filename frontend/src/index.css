@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  max-width: fit-content;
+
+}
+
+.cell.empty {
+  background-color: #e0e0e0;
+}
+
+.cell.ship {
+  background-color: #0077b6;
+}
+
+.cell.hit {
+  background-color: #d00000;
+}
+
+.cell.miss {
+  background-color: #bdbdbd;
+}
