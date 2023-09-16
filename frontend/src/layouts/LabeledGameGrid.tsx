@@ -1,11 +1,11 @@
-import React from "react";
+import { FunctionComponent, ReactNode } from "react";
 
 interface LabeledGameGridProps {
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
 // Adds the labels of letters and numbers to the sides of the game grid.
-const LabeledGameGrid: React.FC<LabeledGameGridProps> = ({ children }) => {
+const LabeledGameGrid: FunctionComponent<LabeledGameGridProps> = ({ children }) => {
     const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const numbers = Array.from({ length: 10 }, (_, i) => i + 1); // [1, 2, 3, ..., 10]
 

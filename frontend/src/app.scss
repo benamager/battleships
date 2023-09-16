@@ -32,6 +32,7 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 0.875rem;
   }
 }
 
@@ -43,6 +44,7 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
   grid-template-rows: repeat(10, 1fr);
   border: $game-grid-spacing solid black;
   max-width: fit-content;
+  position: relative;
 
   &__row {
     display: grid;
@@ -59,6 +61,28 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
     width: $game-grid-cell-width-height;
     height: $game-grid-cell-width-height;
     border: $game-grid-spacing solid black;
-    cursor: pointer;
+  }
+}
+
+
+.ship {
+  display: flex;
+  position: absolute;
+  background-color: rgba(0, 128, 255, 0.2);
+  outline: 2px solid rgb(0, 128, 255);
+  cursor: move;
+  z-index: 10;
+
+  &--horizontal {
+      flex-direction: row;
+  }
+
+  &--vertical {
+      flex-direction: column;
+  }
+
+  &__cell {
+      width: calc($game-grid-width-height / 10);
+      height: calc($game-grid-width-height / 10);
   }
 }
