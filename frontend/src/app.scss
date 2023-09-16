@@ -1,11 +1,43 @@
-/* Game grid (ocean) is a 2D array rendered as a 10x10 grid */
+
 $game-grid-width-height: 25rem;
 $game-grid-spacing: 0.05rem;
+$game-grid-cell-width-height: calc($game-grid-width-height / 10);
 
-.game-grid-wrapper {
-  width: calc($game-grid-width-height + $game-grid-spacing);
+/* Styles for the labels of letters and numbers around the game grid component */
+.game-grid-labels {
+  max-width: fit-content;
+  display: grid;
+  grid-template-columns: 2;
+  grid-template-rows: 2;
+  justify-content: flex-start;
+  user-select: none;
+
+  &__numbers {
+    display: flex;
+    flex-direction: column;
+    grid-row-start: 2;
+    grid-row-end: 2;
+  }
+
+  &__letters {
+    display: flex;
+    grid-column-start: 2;
+    grid-column-end: 2;
+  }
+  
+  // Labels itself
+  &__label {
+    width: $game-grid-cell-width-height;
+    height: $game-grid-cell-width-height;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
+
+/*  Styles for our main game grid (ocean)
+    which is the 2D array of cells that the player clicks on to place their ships */
 .game-grid {
   display: grid;
   grid-template-rows: repeat(10, 1fr);
@@ -14,7 +46,7 @@ $game-grid-spacing: 0.05rem;
 
   &__row {
     display: grid;
-    grid-template-columns: repeat(11, 1fr);
+    grid-template-columns: repeat(10, 1fr);
   }
 
   &__column {
@@ -22,37 +54,11 @@ $game-grid-spacing: 0.05rem;
     grid-template-rows: repeat(10, 1fr);
   }
 
-  &__alignment {
-    display: flex;
-  }
-
   &__cell {
     background-color: white;
-    width: calc($game-grid-width-height / 10);
-    height: calc($game-grid-width-height / 10);
+    width: $game-grid-cell-width-height;
+    height: $game-grid-cell-width-height;
     border: $game-grid-spacing solid black;
     cursor: pointer;
-
-    &--hidden {
-      border: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    &--empty {
-      background-color: white;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  $game-grid-width-height: 20rem;
-
-  .game-grid {
-    &__cell {
-      width: calc($game-grid-width-height / 10);
-      height: calc($game-grid-width-height / 10);
-    }
   }
 }
