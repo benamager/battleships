@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import { useState, useEffect } from "react";
 import io, { Socket } from "socket.io-client";
-import GameBoard from "./components/GameBoard";
-import { Board, Cell, GameState, PlayerState } from "./types/GameBoard";
+import GameBoard from "@/components/GameBoard";
+import { Board, Cell, GameState, PlayerState } from "@/types/GameBoard";
 
 const SOCKET_SERVER_URL = "http://localhost:5600";
 

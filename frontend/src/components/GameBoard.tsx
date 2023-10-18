@@ -1,5 +1,5 @@
 import React from "react";
-import { GameBoardProps } from "../types/GameBoard";
+import { GameBoardProps } from "@/types/GameBoard";
 
 // Prints out the game board element based on board
 const GameBoard: React.FC<GameBoardProps> = ({ board, hitCell, disabled = false }) => {

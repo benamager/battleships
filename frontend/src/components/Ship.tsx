@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { ShipProps } from "../types/Ship";
+import { ShipProps } from "@/types/Ship";
 import { useDrag } from "react-dnd";
 
 // {

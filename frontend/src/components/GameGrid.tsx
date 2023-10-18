@@ -1,7 +1,7 @@
 import { FunctionComponent, useRef } from "react";
-import Ship from "./Ship";
-import { ShipProps } from "../types/Ship";
-import Cell from "./Cell";
+import Ship from "@/components/Ship";
+import { ShipProps } from "@/types/Ship";
+import Cell from "@/components/Cell";
 
 interface GameGridProps {
     gridData: string[][];
