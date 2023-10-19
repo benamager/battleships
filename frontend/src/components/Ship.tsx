@@ -2,24 +2,35 @@ import { FunctionComponent } from "react";
 import { ShipProps } from "@/types/Ship";
 import { useDrag } from "react-dnd";
 
-// {
-//     id: "d3F4md",
-//     startPos: { x: 4, y: 1 },
-//     endPos: { x: 4, y: 4 },
-//     orientation: "vertical",
-//     health: 4,
-// }
+// const [ships, setShips] = useState([
+//     {
+//         id: "d3F4md",
+//         startPos: { x: 4, y: 1 },
+//         endPos: { x: 4, y: 4 },
+//         orientation: "vertical",
+//         length: 4,
+//         health: 4,
+//     },
+// ]);
 
 const ItemTypes = {
     KNIGHT: "knight",
 };
 
-const Ship: FunctionComponent<ShipProps> = ({ startPos, endPos, orientation, setShips, gameGridRef, health }) => {
+const Ship: FunctionComponent<ShipProps> = ({ id, startPos, endPos, orientation, setShips, gameGridRef, health }) => {
     const [{ isDragging }, drag] = useDrag(() => ({
         type: ItemTypes.KNIGHT,
-        collect: (monitor) => ({
-            isDragging: !!monitor.isDragging(),
-        }),
+        item: (item) => {
+            console.log("ITEM");
+            console.log(item);
+            const initialOffset = { x: 0, y: 0 }; // You might calculate initial offset here if needed.
+            return { id, startPos, endPos, orientation, initialOffset }; // Pass the ship details as an item
+        },
+        collect: (monitor) => {
+            return {
+                isDragging: !!monitor.isDragging(),
+            };
+        },
     }));
 
     const length = orientation === "horizontal" ? endPos.x - startPos.x + 1 : endPos.y - startPos.y + 1;
