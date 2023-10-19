@@ -19,6 +19,7 @@ export default function App() {
             startPos: { x: 4, y: 1 },
             endPos: { x: 4, y: 4 },
             orientation: "vertical",
+            length: 4,
             health: 4,
         },
     ]);
