@@ -1,37 +1,20 @@
 import { FunctionComponent } from "react";
 import { ShipProps } from "@/types/Ship";
 import { useDrag } from "react-dnd";
+import useDragCellOffset from "@/hooks/interaction/useDragCellOffset";
 
-// const [ships, setShips] = useState([
-//     {
-//         id: "d3F4md",
-//         startPos: { x: 4, y: 1 },
-//         endPos: { x: 4, y: 4 },
-//         orientation: "vertical",
-//         length: 4,
-//         health: 4,
-//     },
-// ]);
+const Ship: FunctionComponent<ShipProps> = ({ type, startPos, endPos, orientation }) => {
+    // Get the cell offset X and Y during the start of a drag operation
+    const { dragCellOffset, handleMouseDown } = useDragCellOffset();
 
-const ItemTypes = {
-    KNIGHT: "knight",
-};
-
-const Ship: FunctionComponent<ShipProps> = ({ id, startPos, endPos, orientation, setShips, gameGridRef, health }) => {
-    const [{ isDragging }, drag] = useDrag(() => ({
-        type: ItemTypes.KNIGHT,
-        item: (item) => {
-            console.log("ITEM");
-            console.log(item);
-            const initialOffset = { x: 0, y: 0 }; // You might calculate initial offset here if needed.
-            return { id, startPos, endPos, orientation, initialOffset }; // Pass the ship details as an item
-        },
-        collect: (monitor) => {
-            return {
-                isDragging: !!monitor.isDragging(),
-            };
-        },
-    }));
+    const [{ isDragging }, drag] = useDrag(
+        () => ({
+            type: type,
+            item: () => ({ type, startPos, endPos, orientation, dragCellOffset }), // Pass the ship data to drop target
+            collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
+        }),
+        [dragCellOffset],
+    );
 
     const length = orientation === "horizontal" ? endPos.x - startPos.x + 1 : endPos.y - startPos.y + 1;
     const shipSize = 40; //gameGridRef?.current.clientHeight / 10;
@@ -56,13 +39,12 @@ const Ship: FunctionComponent<ShipProps> = ({ id, startPos, endPos, orientation,
         <div
             ref={drag}
             className={`ship ship--${orientation}`}
+            onMouseDown={handleMouseDown}
             style={{
                 ...positionStyles,
                 ...sizeStyles,
                 opacity: isDragging ? 0.5 : 1,
             }}
-            // onMouseDown={startDrag}
-            // onTouchStart={startDrag}
         >
             {Array.from({ length }).map((_, idx) => (
                 <div className="ship__cell" key={idx}></div>

@@ -1,8 +1,5 @@
 import { useDrop } from "react-dnd";
-
-const ItemTypes = {
-    KNIGHT: "knight",
-};
+import RussianShipTypes from "@/constants/RussianShipTypes";
 
 interface Position {
     x: number;
@@ -48,23 +45,34 @@ export default function Cell({ x, y, setShips }) {
 
     const [{ isOver }, drop] = useDrop(
         () => ({
-            accept: ItemTypes.KNIGHT,
+            accept: Object.keys(RussianShipTypes), // Accepts all types defined
             drop: (item, monitor) => {
-                // const { x: g, y: j } = monitor.getDifferenceFromInitialOffset();
-                // console.log(g / 40);
-                // console.log(j / 40);
-                moveShip(item.id, x, y); // Pass the ship id and new x, y coordinates
+                const { id, startPos, endPos, orientation, dragCellOffset } = item;
+                const { cellOffsetX, cellOffsetY } = dragCellOffset;
+
+                // // Calculate new start position
+                const newStartPos: Position = {
+                    x: x - cellOffsetX,
+                    y: y - cellOffsetY,
+                };
+                console.log("newStartPos", newStartPos);
+                moveShip(item.id, newStartPos.x, newStartPos.y); // Pass the ship id and new x, y coordinates
             },
-            // hover: (item, monitor) => {
-            //     if (!monitor.isOver()) {
-            //         return;
-            //     }
+            hover: (item, monitor) => {
+                const { id, startPos, endPos, orientation, dragCellOffset } = item;
+                const { cellOffsetX, cellOffsetY } = dragCellOffset;
 
-            //     const newStartX = x; // New cell position where you want to move the ship
-            //     const newStartY = y; // New cell position where you want to move the ship
+                // // Calculate new start position
+                const newStartPos: Position = {
+                    x: x - cellOffsetX,
+                    y: y - cellOffsetY,
+                };
+                console.log("newStartPos", newStartPos);
 
-            //     moveShip(item.id, newStartX, newStartY);
-            // },
+                if (!monitor.isOver()) {
+                    return;
+                }
+            },
             collect: (monitor) => ({
                 isOver: !!monitor.isOver(),
             }),

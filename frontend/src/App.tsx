@@ -5,17 +5,18 @@ import { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
-//import { isTouchDevice } from "./utils";
+import { ShipProps } from "@/types/Ship";
+//import { isTouchDevice } from "@/utils";
 
 export default function App() {
     const isTouchDevice = () => false;
     const DndBackend = isTouchDevice() ? TouchBackend : HTML5Backend;
 
-    //placeholder 2d array with empty strings
+    // Placeholder 2D array with empty strings
     const gridData = Array.from({ length: 10 }, () => Array.from({ length: 10 }, () => ""));
-    const [ships, setShips] = useState([
+    const [ships, setShips] = useState<ShipProps[]>([
         {
-            id: "d3F4md",
+            type: "BATTLESHIP",
             startPos: { x: 4, y: 1 },
             endPos: { x: 4, y: 4 },
             orientation: "vertical",
