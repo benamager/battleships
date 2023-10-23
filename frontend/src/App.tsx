@@ -11,7 +11,7 @@ export default function App() {
     const isTouchDevice = () => false;
     const DndBackend = isTouchDevice() ? TouchBackend : HTML5Backend;
 
-    //placeholder 2d array with empty strings
+    // Placeholder 2D array with empty strings
     const gridData = Array.from({ length: 10 }, () => Array.from({ length: 10 }, () => ""));
     const [ships, setShips] = useState([
         {
