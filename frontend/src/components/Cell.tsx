@@ -1,8 +1,5 @@
 import { useDrop } from "react-dnd";
-
-const ItemTypes = {
-    KNIGHT: "knight",
-};
+import RussianShipTypes from "@/constants/RussianShipTypes";
 
 interface Position {
     x: number;
@@ -48,7 +45,7 @@ export default function Cell({ x, y, setShips }) {
 
     const [{ isOver }, drop] = useDrop(
         () => ({
-            accept: ItemTypes.KNIGHT,
+            accept: Object.keys(RussianShipTypes), // Accepts all types defined
             drop: (item, monitor) => {
                 const { id, startPos, endPos, orientation, dragCellOffset } = item;
                 const { cellOffsetX, cellOffsetY } = dragCellOffset;

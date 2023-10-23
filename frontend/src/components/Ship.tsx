@@ -1,49 +1,17 @@
-import { useState, FunctionComponent, MouseEvent } from "react";
+import { FunctionComponent } from "react";
 import { ShipProps } from "@/types/Ship";
 import { useDrag } from "react-dnd";
+import useDragCellOffset from "@/hooks/interaction/useDragCellOffset";
 
-// const [ships, setShips] = useState([
-//     {
-//         id: "d3F4md",
-//         startPos: { x: 4, y: 1 },
-//         endPos: { x: 4, y: 4 },
-//         orientation: "vertical",
-//         length: 4,
-//         health: 4,
-//     },
-// ]);
+const Ship: FunctionComponent<ShipProps> = ({ type, startPos, endPos, orientation }) => {
+    // Get the cell offset X and Y during the start of a drag operation
+    const { dragCellOffset, handleMouseDown } = useDragCellOffset();
 
-const ItemTypes = {
-    KNIGHT: "knight",
-};
-
-const Ship: FunctionComponent<ShipProps> = ({ id, startPos, endPos, orientation, setShips, gameGridRef, health }) => {
-    // Grab drag offset from cursor to ships left and top corner
-    // Then we can calculate the ships proper position
-    const [dragCellOffset, setDragCellOffset] = useState<{ cellOffsetX: number; cellOffsetY: number }>(null);
-    const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const cellSize = 40; // Define cell size
-
-        // Calculate horizontal and vertical cell index from drag start position
-        setDragCellOffset({
-            cellOffsetX: Math.floor((e.clientX - rect.left) / cellSize),
-            cellOffsetY: Math.floor((e.clientY - rect.top) / cellSize),
-        });
-    };
-
-    //console.log(dragCellOffset);
     const [{ isDragging }, drag] = useDrag(
         () => ({
-            type: ItemTypes.KNIGHT,
-            item: (item) => {
-                return { id, startPos, endPos, orientation, dragCellOffset }; // Pass the ship details as an item
-            },
-            collect: (monitor) => {
-                return {
-                    isDragging: !!monitor.isDragging(),
-                };
-            },
+            type: type,
+            item: () => ({ type, startPos, endPos, orientation, dragCellOffset }), // Pass the ship data to drop target
+            collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
         }),
         [dragCellOffset],
     );

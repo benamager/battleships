@@ -1,4 +1,4 @@
-import { FunctionComponent, useRef } from "react";
+import { FunctionComponent, useRef, Dispatch, SetStateAction } from "react";
 import Ship from "@/components/Ship";
 import { ShipProps } from "@/types/Ship";
 import Cell from "@/components/Cell";
@@ -6,19 +6,17 @@ import Cell from "@/components/Cell";
 interface GameGridProps {
     gridData: string[][];
     ships?: ShipProps[];
-    setShips?: (ships: ShipProps[]) => void;
+    setShips?: Dispatch<SetStateAction<ShipProps[]>>;
 }
 
-const ItemTypes = {
-    KNIGHT: "knight",
-};
-
-// Is our game grid or ocean grid. It's a 2D array of strings.
+// Is our game grid (ocean), which is a 2D array of strings.
+// Ships are rendered on top of the grid with position absolute.
 const GameGrid: FunctionComponent<GameGridProps> = ({ gridData, ships, setShips }) => {
-    const gameGridRef = useRef<HTMLDivElement>(null); // clientHeight / 10 = cell width and height
+    const gameGridRef = useRef<HTMLDivElement>(null);
 
     return (
         <div ref={gameGridRef} className="game-grid">
+            {/* Render 2D grid */}
             {gridData.map((rowData, rowIndex) => (
                 <div className="game-grid__row" key={rowIndex}>
                     {rowData.map((_, columnIndex) => (
@@ -27,7 +25,8 @@ const GameGrid: FunctionComponent<GameGridProps> = ({ gridData, ships, setShips 
                 </div>
             ))}
 
-            {ships && ships.map((ship) => <Ship key={ship.id} setShips={setShips} {...ship} gameGridRef={gameGridRef} />)}
+            {/* Render ships */}
+            {ships && ships.map((ship) => <Ship key={ship.type} {...ship} />)}
         </div>
     );
 };
