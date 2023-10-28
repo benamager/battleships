@@ -1,21 +1,7 @@
-import { FunctionComponent } from "react";
+import { useEffect, useState, FunctionComponent } from "react";
 import { ShipProps } from "@/types/Ship";
-import { useDrag } from "react-dnd";
-import useDragCellOffset from "@/hooks/interaction/useDragCellOffset";
 
-const Ship: FunctionComponent<ShipProps> = ({ type, startPos, endPos, orientation }) => {
-    // Get the cell offset X and Y during the start of a drag operation
-    const { dragCellOffset, handleMouseDown } = useDragCellOffset();
-
-    const [{ isDragging }, drag] = useDrag(
-        () => ({
-            type: type,
-            item: () => ({ type, startPos, endPos, orientation, dragCellOffset }), // Pass the ship data to drop target
-            collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
-        }),
-        [dragCellOffset],
-    );
-
+const Ship: FunctionComponent<ShipProps> = ({ id, startPos, endPos, orientation }) => {
     const length = orientation === "horizontal" ? endPos.x - startPos.x + 1 : endPos.y - startPos.y + 1;
     const shipSize = 40; //gameGridRef?.current.clientHeight / 10;
 
@@ -37,14 +23,13 @@ const Ship: FunctionComponent<ShipProps> = ({ type, startPos, endPos, orientatio
 
     return (
         <div
-            ref={drag}
             className={`ship ship--${orientation}`}
-            onMouseDown={handleMouseDown}
             style={{
                 ...positionStyles,
                 ...sizeStyles,
-                opacity: isDragging ? 0.5 : 1,
+                // pointerEvents: isDragging ? "none" : "auto",
             }}
+            data-shipid={id}
         >
             {Array.from({ length }).map((_, idx) => (
                 <div className="ship__cell" key={idx}></div>

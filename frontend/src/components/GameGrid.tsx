@@ -1,4 +1,4 @@
-import { FunctionComponent, useRef, Dispatch, SetStateAction } from "react";
+import { FunctionComponent, useRef, Dispatch, SetStateAction, useEffect } from "react";
 import Ship from "@/components/Ship";
 import { ShipProps } from "@/types/Ship";
 import Cell from "@/components/Cell";
@@ -26,7 +26,7 @@ const GameGrid: FunctionComponent<GameGridProps> = ({ gridData, ships, setShips 
             ))}
 
             {/* Render ships */}
-            {ships && ships.map((ship) => <Ship key={ship.type} {...ship} />)}
+            {ships && ships.map((ship) => <Ship key={ship.id} {...ship} />)}
         </div>
     );
 };

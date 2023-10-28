@@ -84,5 +84,6 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
   &__cell {
       width: calc($game-grid-width-height / 10);
       height: calc($game-grid-width-height / 10);
+      pointer-events: none;
   }
 }
