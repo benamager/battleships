@@ -62,28 +62,20 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
     height: $game-grid-cell-width-height;
     border: $game-grid-spacing solid black;
   }
-}
 
+  // &__ship {
+  //   transform: scale(1.02)
+  // }
 
-.ship {
-  display: flex;
-  position: absolute;
-  background-color: rgba(0, 128, 255, 0.2);
-  outline: 2px solid rgb(0, 128, 255);
-  cursor: move;
-  z-index: 10;
-
-  &--horizontal {
-      flex-direction: row;
-  }
-
-  &--vertical {
-      flex-direction: column;
-  }
-
-  &__cell {
-      width: calc($game-grid-width-height / 10);
-      height: calc($game-grid-width-height / 10);
-      pointer-events: none;
+  &__ship-cell {
+    position: absolute;
+    background-color: #0022ff35;
+    width: 40px;
+    height: 40px;
+    pointer-events: initial;
+    box-sizing: border-box;
+    cursor: move;
   }
 }
+
+
