@@ -1,43 +1,66 @@
 import "@/app.scss";
 import GameGrid from "@/components/GameGrid";
 import LabeledGameGrid from "@/layouts/LabeledGameGrid";
-import { useState } from "react";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { TouchBackend } from "react-dnd-touch-backend";
-import { ShipProps } from "@/types/Ship";
-//import { isTouchDevice } from "@/utils";
+import { useState, useEffect } from "react";
+import { DraggingProvider } from "@/contexts/DraggingContext";
+
+const cellWidth = 40;
+const cellHeight = 40;
 
 export default function App() {
-    const isTouchDevice = () => false;
-    const DndBackend = isTouchDevice() ? TouchBackend : HTML5Backend;
-
-    // Placeholder 2D array with empty strings
-    const gridData = Array.from({ length: 10 }, () => Array.from({ length: 10 }, () => ""));
     const [ships, setShips] = useState<ShipProps[]>([
         {
-            type: "BATTLESHIP",
-            startPos: { x: 4, y: 1 },
-            endPos: { x: 4, y: 4 },
-            orientation: "vertical",
-            length: 4,
-            health: 4,
+            id: "CUSTOM",
+            cells: [
+                { x: 2, y: 2, state: "hit" },
+                { x: 2, y: 3, state: "hit" },
+                { x: 2, y: 4, state: "hit" },
+                { x: 3, y: 3, state: "hit" },
+                { x: 1, y: 3, state: "hit" },
+            ],
+            health: 5,
+        },
+        {
+            id: "CUSTOM2",
+            cells: [
+                { x: 6, y: 0, state: "hit" },
+                { x: 6, y: 1, state: "hit" },
+                { x: 6, y: 2, state: "hit" },
+                { x: 6, y: 3, state: "hit" },
+            ],
+            health: 5,
+        },
+        {
+            id: "CUSTOM3",
+            cells: [
+                { x: 3, y: 7, state: "hit" },
+                { x: 3, y: 8, state: "hit" },
+                { x: 4, y: 8, state: "hit" },
+                { x: 5, y: 8, state: "hit" },
+                { x: 6, y: 8, state: "hit" },
+            ],
+            health: 5,
+        },
+        {
+            id: "CUSTOM4",
+            cells: [{ x: 8, y: 5, state: "hit" }],
+            health: 5,
         },
     ]);
 
     return (
-        <DndProvider backend={DndBackend}>
+        <DraggingProvider>
             <main className="flex flex-col">
                 <h1>Battleship</h1>
                 <div className="flex gap-5 mx-auto">
                     <LabeledGameGrid>
-                        <GameGrid gridData={gridData} ships={ships} setShips={setShips} />
+                        <GameGrid ships={ships} setShips={setShips} />
                     </LabeledGameGrid>
-                    <LabeledGameGrid>
-                        <GameGrid gridData={gridData} />
-                    </LabeledGameGrid>
+                    {/* <LabeledGameGrid>
+                        <GameGrid />
+                    </LabeledGameGrid> */}
                 </div>
             </main>
-        </DndProvider>
+        </DraggingProvider>
     );
 }

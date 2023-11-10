@@ -1,16 +1,14 @@
-export type ShipType = "BATTLESHIP" | "CRUISER" | "DESTROYER" | "SUBMARINE";
-
 // A single ship
-export interface ShipProps {
-    type: ShipType;
-    startPos: { x: number; y: number };
-    endPos: { x: number; y: number };
-    orientation: "vertical" | "horizontal";
-    length: number;
+export interface SingleShipProps {
+    id: string;
+    cells: {
+        x: number;
+        y: number;
+    }[];
     health: number;
 }
 
 
-export interface ShipsProps {
-    ships: ShipProps[];
+export interface MultipleShipsProps {
+    ships: SingleShipProps[];
 }
