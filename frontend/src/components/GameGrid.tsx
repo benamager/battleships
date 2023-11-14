@@ -9,8 +9,7 @@ interface GameGridProps {
     setShips?: React.Dispatch<React.SetStateAction<ShipProps[]>>;
 }
 
-const GameGrid: FunctionComponent<GameGridProps> = ({ ships, setShips }) => {
-    const grid = Array.from({ length: 10 }, () => Array.from({ length: 10 }, () => null));
+const GameGrid: FunctionComponent<GameGridProps> = ({ ships, setShips, grid }) => {
     const gameGridRef = createRef<HTMLDivElement>();
 
     return (
@@ -18,8 +17,8 @@ const GameGrid: FunctionComponent<GameGridProps> = ({ ships, setShips }) => {
             {/* Render 2D grid with ships integrated */}
             {grid.map((rowData, rowIndex) => (
                 <div className="game-grid__row" key={rowIndex}>
-                    {rowData.map((_, columnIndex) => (
-                        <Cell key={`${rowIndex}-${columnIndex}`} x={columnIndex} y={rowIndex} setShips={setShips} />
+                    {rowData.map((cellValue, columnIndex) => (
+                        <Cell key={`${rowIndex}-${columnIndex}`} x={columnIndex} y={rowIndex} setShips={setShips} cellValue={cellValue} />
                     ))}
                 </div>
             ))}

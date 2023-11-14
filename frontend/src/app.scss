@@ -63,9 +63,14 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
     border: $game-grid-spacing solid black;
   }
 
-  // &__ship {
-  //   transform: scale(1.02)
-  // }
+  &__cell--blank {
+    background-color: grey;
+  }
+
+  &__ship {
+    position: absolute;
+    pointer-events: none;
+  }
 
   &__ship-cell {
     position: absolute;

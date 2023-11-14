@@ -8,6 +8,21 @@ const cellWidth = 40;
 const cellHeight = 40;
 
 export default function App() {
+    // 2D grid of cells
+    // "" = placeholder
+    // "e" = empty (default)
+    const grid = [
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ];
     const [ships, setShips] = useState<ShipProps[]>([
         {
             id: "CUSTOM",
@@ -53,9 +68,7 @@ export default function App() {
             <main className="flex flex-col">
                 <h1>Battleship</h1>
                 <div className="flex gap-5 mx-auto">
-                    <LabeledGameGrid>
-                        <GameGrid ships={ships} setShips={setShips} />
-                    </LabeledGameGrid>
+                    <GameGrid ships={ships} setShips={setShips} grid={grid} />
                     {/* <LabeledGameGrid>
                         <GameGrid />
                     </LabeledGameGrid> */}
