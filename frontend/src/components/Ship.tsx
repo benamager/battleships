@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import cellHasNeighbor from "@/utils/cellHasNeighbor";
+//import { throttle } from "lodash";
 
 const cellWidthHeight = 40;
 
@@ -49,13 +50,22 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
             }));
 
             // But for now here goes collision detection
+            // If any of the cells are outside the grid
             if (newCells.some((cell) => cell.x < 0 || cell.x > 9 || cell.y < 0 || cell.y > 9)) {
                 if (currentDragging.canPlace) {
-                    setDragging((prevState) => ({ ...prevState, canPlace: false, newCells }));
+                    console.log("CANT PLACE NOW");
+                    setDragging((prevState) => ({ ...prevState, canPlace: false }));
+                    return;
                 }
             } else {
                 if (!currentDragging.canPlace) {
-                    setDragging((prevState) => ({ ...prevState, canPlace: true, newCells: shipCellsRef.current }));
+                    console.log("CAN NOW PLACE");
+                    setDragging((prevState) => ({ ...prevState, canPlace: true, newCells: newCells }));
+                    // const gridRect = gameGridRef.current.getBoundingClientRect();
+                    // const relativeTop = e.clientY - gridRect.top - currentDragging.relativeY;
+                    // const relativeLeft = e.clientX - gridRect.left - currentDragging.relativeX;
+                    // setTopPosition(relativeTop);
+                    // setLeftPosition(relativeLeft);
                 }
             }
 
@@ -71,6 +81,7 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
             if (currentDragging.canPlace) {
                 setTopPosition(Math.min(...newCells.map((cell) => cell.y)) * cellWidthHeight);
                 setLeftPosition(Math.min(...newCells.map((cell) => cell.x)) * cellWidthHeight);
+                setDragging((prevState) => ({ ...prevState, newCells: newCells }));
             }
         },
         [draggingRef, gameGridRef, shipCellsRef],
@@ -98,6 +109,9 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
 
     // Mouse up, clean up event listeners
     const handleMouseUp = useCallback(() => {
+        console.log("MOUSE UP", draggingRef.current);
+        // if (!draggingRef.current.isDragging) return;
+
         setShips((prevShips) => {
             return prevShips.map((s) => {
                 if (s.id === ship.id) {
@@ -109,8 +123,8 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
                 return s;
             });
         });
-        // setTopPosition(Math.min(...ship.cells.map((cell) => cell.y)) * cellWidthHeight);
-        // setLeftPosition(Math.min(...ship.cells.map((cell) => cell.x)) * cellWidthHeight);
+        setTopPosition(Math.min(...draggingRef.current.newCells.map((cell) => cell.y)) * cellWidthHeight);
+        setLeftPosition(Math.min(...draggingRef.current.newCells.map((cell) => cell.x)) * cellWidthHeight);
 
         setDragging({
             isDragging: false,
