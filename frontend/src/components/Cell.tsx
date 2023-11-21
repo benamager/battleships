@@ -1,4 +1,9 @@
 export default function Cell({ x, y, cellValue, grid }) {
+    /*  If "d" cell check each side for an "e" cell
+        if it finds one, apply a border to that side of this cell.
+
+        This is so when "d" cells are in the middle of the grid they have proper border styling.
+    */
     const getBorderStyleForD = () => {
         let style = {};
 
@@ -19,10 +24,12 @@ export default function Cell({ x, y, cellValue, grid }) {
         return style;
     };
 
+    /*  If "e" cell see if it's on the outermost edge of the grid.
+        If it is, apply a thicker border that side - to make it look pretty :)
+    */
     const getBorderStyleForE = () => {
         let style = {};
 
-        // Add thicker border for outermost "e" cells
         if (y === 0) {
             style.borderTop = "1.4px solid #000";
         }

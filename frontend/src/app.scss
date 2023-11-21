@@ -40,19 +40,13 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
 /*  Styles for our main game grid (ocean)
     which is the 2D array of cells that the player clicks on to place their ships */
 .game-grid {
-  display: grid;
-  grid-template-rows: repeat(10, 1fr);
+  display: flex;
+  flex-direction: column;
   max-width: fit-content;
   position: relative;
 
   &__row {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-  }
-
-  &__column {
-    display: grid;
-    grid-template-rows: repeat(10, 1fr);
+    display: flex;
   }
 
   &__cell {
@@ -65,6 +59,7 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
   &__cell--blank {
     background-color: white;
     border: none;
+    /* Other borders are added dynamically from within cell component */
   }
 
   &__ship {
