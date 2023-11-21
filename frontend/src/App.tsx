@@ -3,35 +3,22 @@ import GameGrid from "@/components/GameGrid";
 import LabeledGameGrid from "@/layouts/LabeledGameGrid";
 import { useState, useEffect } from "react";
 import { DraggingProvider } from "@/contexts/DraggingContext";
+import { maps } from "@/components/Maps";
 
 const cellWidth = 40;
 const cellHeight = 40;
 
 export default function App() {
-    // 2D grid of cells
-    // "" = placeholder
-    // "e" = empty (default)
-    const grid = [
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-        ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
-    ];
+    const [currentMap, setCurrentMap] = useState(maps[Math.floor(Math.random() * maps.length)]);
+
     const [ships, setShips] = useState<ShipProps[]>([
         {
             id: "CUSTOM",
             cells: [
                 { x: 2, y: 2, state: "hit" },
                 { x: 2, y: 3, state: "hit" },
-                { x: 2, y: 4, state: "hit" },
                 { x: 3, y: 3, state: "hit" },
-                { x: 1, y: 3, state: "hit" },
+                { x: 3, y: 2, state: "hit" },
             ],
             health: 5,
         },
@@ -45,22 +32,6 @@ export default function App() {
             ],
             health: 5,
         },
-        {
-            id: "CUSTOM3",
-            cells: [
-                { x: 3, y: 7, state: "hit" },
-                { x: 3, y: 8, state: "hit" },
-                { x: 4, y: 8, state: "hit" },
-                { x: 5, y: 8, state: "hit" },
-                { x: 6, y: 8, state: "hit" },
-            ],
-            health: 5,
-        },
-        {
-            id: "CUSTOM4",
-            cells: [{ x: 8, y: 5, state: "hit" }],
-            health: 5,
-        },
     ]);
 
     return (
@@ -68,7 +39,7 @@ export default function App() {
             <main className="flex flex-col">
                 <h1>Battleship</h1>
                 <div className="flex gap-5 mx-auto">
-                    <GameGrid ships={ships} setShips={setShips} grid={grid} />
+                    <GameGrid ships={ships} setShips={setShips} grid={currentMap} />
                     {/* <LabeledGameGrid>
                         <GameGrid />
                     </LabeledGameGrid> */}

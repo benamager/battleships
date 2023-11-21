@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useContext } from "react";
 import cellHasNeighbor from "@/utils/cellHasNeighbor";
+import { DraggingContext } from "@/contexts/DraggingContext";
 //import { throttle } from "lodash";
 
 const cellWidthHeight = 40;
 
 const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
+    const { currentMap } = useContext(DraggingContext);
     const [dragging, setDragging] = useState({
         isDragging: false,
         initialX: null,
@@ -14,6 +16,16 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
         canPlace: null,
         newCells: [],
     });
+
+    const isPositionValid = (newCells) => {
+        // Function logic
+        return newCells.every((cell) => {
+            const isWithinBounds = cell.x >= 0 && cell.x < 10 && cell.y >= 0 && cell.y < 10;
+            const isNotDisabled = isWithinBounds && currentMap[cell.y][cell.x] !== "d";
+            return isNotDisabled;
+        });
+    };
+
     const shipContainerRef = useRef<HTMLDivElement>();
     const draggingRef = useRef(dragging);
     const shipCellsRef = useRef(ship.cells);
@@ -30,6 +42,7 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
         - If it can place it will follow the gameGrid cells.
         - If it can't place it will follow the mouse.
     */
+
     const handleMouseMove = useCallback(
         (e) => {
             const currentDragging = draggingRef.current; // Use the ref to get the current dragging state
@@ -46,6 +59,7 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
                     setDragging((prevState) => ({ ...prevState, isDragging: true }));
                 }
             }
+            console.log("MouseMove - Dragging State:", currentDragging);
 
             // Calculate the offset in pixels from the initial positions
             const offsetX = e.clientX - currentDragging.initialX;
@@ -61,18 +75,22 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
                 y: cell.y + movedCellsY,
             }));
 
+            const canPlace = isPositionValid(newCells);
+            console.log("MouseMove - New Cells:", newCells);
+            console.log("MouseMove - Can Place:", canPlace);
+
             // But for now here goes collision detection
             // If any of the cells are outside the grid
             if (newCells.some((cell) => cell.x < 0 || cell.x > 9 || cell.y < 0 || cell.y > 9)) {
                 if (currentDragging.canPlace) {
                     console.log("CAN'T place");
-                    setDragging((prevState) => ({ ...prevState, canPlace: false }));
+                    setDragging((prevState) => ({ ...prevState, canPlace, newCells }));
                     return;
                 }
             } else {
                 if (!currentDragging.canPlace) {
                     console.log("CAN NOW PLACE AGAIN");
-                    setDragging((prevState) => ({ ...prevState, canPlace: true, newCells: newCells }));
+                    setDragging((prevState) => ({ ...prevState, canPlace, newCells }));
                     // const gridRect = gameGridRef.current.getBoundingClientRect();
                     // const relativeTop = e.clientY - gridRect.top - currentDragging.relativeY;
                     // const relativeLeft = e.clientX - gridRect.left - currentDragging.relativeX;
@@ -98,7 +116,7 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
                 setDragging((prevState) => ({ ...prevState, newCells: newCells }));
             }
         },
-        [draggingRef, gameGridRef, shipCellsRef],
+        [draggingRef, shipCellsRef, cellWidthHeight, isPositionValid],
     );
 
     // On mouse down set dragging state
@@ -108,8 +126,17 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
         const relativeX = e.clientX - rect.left;
         const relativeY = e.clientY - rect.top;
 
+        console.log("MouseDown - Initial Dragging State:", {
+            isDragging: true,
+            initialX: e.clientX,
+            initialY: e.clientY,
+            relativeX,
+            relativeY,
+            canPlace: true,
+            newCells: shipCellsRef.current,
+        });
         setDragging({
-            isDragging: false,
+            isDragging: true,
             initialX: e.clientX,
             initialY: e.clientY,
             relativeX,

@@ -11,6 +11,7 @@ interface DraggingState {
 interface DraggingContextType {
     dragging: DraggingState;
     setDragging: React.Dispatch<React.SetStateAction<DraggingState>>;
+    currentMap: string[][];
 }
 
 // Create a context with an empty object and cast it to the context type
@@ -21,14 +22,14 @@ interface DraggingProviderProps {
     children: React.ReactNode;
 }
 
-const DraggingProvider: React.FunctionComponent<DraggingProviderProps> = ({ children }) => {
+const DraggingProvider: React.FunctionComponent<DraggingProviderProps> = ({ children, currentMap }) => {
     const [dragging, setDragging] = useState<DraggingState>({
         shipId: null,
         initialX: null,
         initialY: null,
     });
 
-    return <DraggingContext.Provider value={{ dragging, setDragging }}>{children}</DraggingContext.Provider>;
+    return <DraggingContext.Provider value={{ dragging, setDragging, currentMap }}>{children}</DraggingContext.Provider>;
 };
 
 export { DraggingContext, DraggingProvider };
