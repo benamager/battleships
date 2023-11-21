@@ -18,7 +18,7 @@ const GameGrid: FunctionComponent<GameGridProps> = ({ ships, setShips, grid }) =
             {grid.map((rowData, rowIndex) => (
                 <div className="game-grid__row" key={rowIndex}>
                     {rowData.map((cellValue, columnIndex) => (
-                        <Cell key={`${rowIndex}-${columnIndex}`} x={columnIndex} y={rowIndex} setShips={setShips} cellValue={cellValue} />
+                        <Cell key={`${rowIndex}-${columnIndex}`} x={columnIndex} y={rowIndex} setShips={setShips} cellValue={cellValue} grid={grid} />
                     ))}
                 </div>
             ))}

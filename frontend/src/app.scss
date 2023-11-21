@@ -42,7 +42,6 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
 .game-grid {
   display: grid;
   grid-template-rows: repeat(10, 1fr);
-  border: $game-grid-spacing solid black;
   max-width: fit-content;
   position: relative;
 
@@ -60,11 +59,12 @@ $game-grid-cell-width-height: calc($game-grid-width-height / 10);
     background-color: white;
     width: $game-grid-cell-width-height;
     height: $game-grid-cell-width-height;
-    border: $game-grid-spacing solid black;
+    border: 0.8px solid black;
   }
 
   &__cell--blank {
-    background-color: grey;
+    background-color: white;
+    border: none;
   }
 
   &__ship {
