@@ -1,15 +1,11 @@
-import React, { FunctionComponent, useEffect, useState, useContext, createRef } from "react";
-import { DraggingContext } from "@/contexts/DraggingContext";
-import { ShipProps } from "@/types/Ship";
+import { useContext, createRef, FunctionComponent } from "react";
 import Cell from "@/components/Cell";
 import Ship from "@/components/Ship";
+import { ShipsContext } from "@/contexts/ShipsContext";
 
-interface GameGridProps {
-    ships?: ShipProps[];
-    setShips?: React.Dispatch<React.SetStateAction<ShipProps[]>>;
-}
+const GameGrid: FunctionComponent<> = ({ grid }) => {
+    const { shipsContext } = useContext(ShipsContext);
 
-const GameGrid: FunctionComponent<GameGridProps> = ({ ships, setShips, grid }) => {
     const gameGridRef = createRef<HTMLDivElement>();
 
     return (
@@ -18,13 +14,15 @@ const GameGrid: FunctionComponent<GameGridProps> = ({ ships, setShips, grid }) =
             {grid.map((rowData, rowIndex) => (
                 <div className="game-grid__row" key={rowIndex}>
                     {rowData.map((cellValue, columnIndex) => (
-                        <Cell key={`${rowIndex}-${columnIndex}`} x={columnIndex} y={rowIndex} setShips={setShips} cellValue={cellValue} grid={grid} />
+                        <Cell key={`${rowIndex}-${columnIndex}`} x={columnIndex} y={rowIndex} cellValue={cellValue} grid={grid} />
                     ))}
                 </div>
             ))}
 
             {/* Render ships */}
-            {ships?.map((ship) => <Ship key={ship.id} ship={ship} ships={ships} shipId={ship.id} setShips={setShips} gameGridRef={gameGridRef} currentMap={grid} />)}
+            {shipsContext.map((ship) => (
+                <Ship key={ship.id} ship={ship} shipId={ship.id} gameGridRef={gameGridRef} currentMap={grid} />
+            ))}
         </div>
     );
 };
