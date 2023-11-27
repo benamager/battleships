@@ -5,8 +5,49 @@ import { DraggingContext } from "@/contexts/DraggingContext";
 
 const cellWidthHeight = 40;
 
-const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
-    const { currentMap } = useContext(DraggingContext);
+function isWithinBounds(shipCells, grid) {
+    console.log("is within bounds", grid);
+    return shipCells.every((cell) => {
+        console.log("cell", cell);
+        // Check if cell coordinates are within the grid boundaries
+        if (cell.y < 0 || cell.y >= grid.length || cell.x < 0 || cell.x >= grid[cell.y].length) {
+            return false;
+        }
+
+        // Check if the cell in the grid is empty
+        return grid[cell.y][cell.x] === "e";
+    });
+}
+
+// Check if the ship is colliding with any other ships
+function isCollisionFree(shipCells, otherShips) {
+    return otherShips.every((otherShip) => {
+        return otherShip.cells.every((otherShipCell) => {
+            return !shipCells.some((shipCell) => {
+                return shipCell.x === otherShipCell.x && shipCell.y === otherShipCell.y;
+            });
+        });
+    });
+}
+function isMoveValid(cells, otherShips, currentMap) {
+    // First, check if the ship is within grid boundaries
+    if (!isWithinBounds(cells, currentMap)) {
+        console.log("Move is out of bounds");
+        return false;
+    }
+
+    // Then, check if the ship is colliding with any other ships
+    if (!isCollisionFree(cells, otherShips)) {
+        console.log("Move causes a collision");
+        return false;
+    }
+
+    // If all checks pass, the move is valid
+    return true;
+}
+
+const Ship = ({ shipId, setShips, ship, gameGridRef, ships, currentMap }) => {
+    // Store some information while dragging
     const [dragging, setDragging] = useState({
         isDragging: false,
         initialX: null,
@@ -16,39 +57,31 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
         canPlace: null,
         newCells: [],
     });
-
-    const isPositionValid = (newCells) => {
-        // Function logic
-        return newCells.every((cell) => {
-            const isWithinBounds = cell.x >= 0 && cell.x < 10 && cell.y >= 0 && cell.y < 10;
-            const isNotDisabled = isWithinBounds && currentMap[cell.y][cell.x] !== "d";
-            return isNotDisabled;
-        });
-    };
-
-    const shipContainerRef = useRef<HTMLDivElement>();
-    const draggingRef = useRef(dragging);
-    const shipCellsRef = useRef(ship.cells);
-
-    // Calculate the default top and left positions based on the smallest x and y values.
+    // Ships top and left position based on the smallest x and y values.
     const [topPosition, setTopPosition] = useState(Math.min(...ship.cells.map((cell) => cell.y)) * cellWidthHeight);
     const [leftPosition, setLeftPosition] = useState(Math.min(...ship.cells.map((cell) => cell.x)) * cellWidthHeight);
-
-    // Calculate width and height of ship container based on the largest x and y values.
+    // Calculate width and height of ships container based on the largest x and y values.
     const shipWidth = (Math.max(...ship.cells.map((cell) => cell.x)) - Math.min(...ship.cells.map((cell) => cell.x)) + 1) * cellWidthHeight;
     const shipHeight = (Math.max(...ship.cells.map((cell) => cell.y)) - Math.min(...ship.cells.map((cell) => cell.y)) + 1) * cellWidthHeight;
+
+    /*  Storing states in ref for access in event listeners
+        useEffects updates them on change */
+    const shipContainerRef = useRef<HTMLDivElement>(); // To get bounding client rect
+    const shipCellsRef = useRef(ship.cells);
+    const draggingRef = useRef(dragging);
+    const currentMapRef = useRef(currentMap);
 
     /*  On mouse move we have two states it can be in visually.
         - If it can place it will follow the gameGrid cells.
         - If it can't place it will follow the mouse.
     */
-
     const handleMouseMove = useCallback(
         (e) => {
-            const currentDragging = draggingRef.current; // Use the ref to get the current dragging state
+            e.preventDefault();
+            const currentDragging = draggingRef.current; // Use ref to get current dragging state
 
             // If not dragging yet
-            if (!currentDragging.isDragging) {
+            if (currentDragging.isDragging === false) {
                 // if mouse has moved enough (10px) either horizontally or vertically to start dragging
                 if (Math.abs(e.clientX - currentDragging.initialX) < 5 && Math.abs(e.clientY - currentDragging.initialY) < 5) {
                     console.log("hasn't moved enough to start dragging");
@@ -59,7 +92,6 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
                     setDragging((prevState) => ({ ...prevState, isDragging: true }));
                 }
             }
-            console.log("MouseMove - Dragging State:", currentDragging);
 
             // Calculate the offset in pixels from the initial positions
             const offsetX = e.clientX - currentDragging.initialX;
@@ -75,32 +107,40 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
                 y: cell.y + movedCellsY,
             }));
 
-            const canPlace = isPositionValid(newCells);
-            console.log("MouseMove - New Cells:", newCells);
-            console.log("MouseMove - Can Place:", canPlace);
+            const otherShips = ships.filter((s) => s.id !== ship.id);
+            // grid length and width
+            const gridHeight = currentMapRef.current.length;
+            const gridWidth = currentMapRef.current[0].length;
+            const canPlace = isMoveValid(newCells, otherShips, currentMapRef.current);
+            console.log("can place", canPlace);
+
+            // Update dragging state based on canPlace
+            if (canPlace && !currentDragging.canPlace) {
+                setDragging((prevState) => ({ ...prevState, canPlace, newCells }));
+            }
+            if (!canPlace && currentDragging.canPlace) {
+                setDragging((prevState) => ({ ...prevState, canPlace }));
+            }
 
             // But for now here goes collision detection
             // If any of the cells are outside the grid
-            if (newCells.some((cell) => cell.x < 0 || cell.x > 9 || cell.y < 0 || cell.y > 9)) {
-                if (currentDragging.canPlace) {
-                    console.log("CAN'T place");
-                    setDragging((prevState) => ({ ...prevState, canPlace, newCells }));
-                    return;
-                }
-            } else {
-                if (!currentDragging.canPlace) {
-                    console.log("CAN NOW PLACE AGAIN");
-                    setDragging((prevState) => ({ ...prevState, canPlace, newCells }));
-                    // const gridRect = gameGridRef.current.getBoundingClientRect();
-                    // const relativeTop = e.clientY - gridRect.top - currentDragging.relativeY;
-                    // const relativeLeft = e.clientX - gridRect.left - currentDragging.relativeX;
-                    // setTopPosition(relativeTop);
-                    // setLeftPosition(relativeLeft);
-                }
-            }
 
-            // Can't place, follow the mouse
-            if (!currentDragging.canPlace) {
+            // if (currentDragging.canPlace) {
+            //     console.log("CAN'T place");
+            //     setDragging((prevState) => ({ ...prevState, canPlace, newCells }));
+            //     return;
+            // }
+            // if (!currentDragging.canPlace) {
+            //     console.log("CAN NOW PLACE AGAIN");
+            //     setDragging((prevState) => ({ ...prevState, canPlace, newCells }));
+            //     // const gridRect = gameGridRef.current.getBoundingClientRect();
+            //     // const relativeTop = e.clientY - gridRect.top - currentDragging.relativeY;
+            //     // const relativeLeft = e.clientX - gridRect.left - currentDragging.relativeX;
+            //     // setTopPosition(relativeTop);
+            //     // setLeftPosition(relativeLeft);
+            // }
+
+            if (!canPlace) {
                 console.log("can't place, follow mouse");
                 const gridRect = gameGridRef.current.getBoundingClientRect();
                 const relativeTop = e.clientY - gridRect.top - currentDragging.relativeY;
@@ -109,40 +149,33 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
                 setLeftPosition(relativeLeft);
             }
 
-            if (currentDragging.canPlace) {
+            if (canPlace) {
                 console.log("can place, follow grid");
                 setTopPosition(Math.min(...newCells.map((cell) => cell.y)) * cellWidthHeight);
                 setLeftPosition(Math.min(...newCells.map((cell) => cell.x)) * cellWidthHeight);
+
                 setDragging((prevState) => ({ ...prevState, newCells: newCells }));
             }
         },
-        [draggingRef, shipCellsRef, cellWidthHeight, isPositionValid],
+        [draggingRef, shipCellsRef, cellWidthHeight, gameGridRef],
     );
 
-    // On mouse down set dragging state
+    // On mouse down set dragging state and add event listeners
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+        e.preventDefault();
         console.log("mouse down", e);
         const rect = shipContainerRef.current.getBoundingClientRect();
         const relativeX = e.clientX - rect.left;
         const relativeY = e.clientY - rect.top;
 
-        console.log("MouseDown - Initial Dragging State:", {
-            isDragging: true,
-            initialX: e.clientX,
-            initialY: e.clientY,
-            relativeX,
-            relativeY,
-            canPlace: true,
-            newCells: shipCellsRef.current,
-        });
         setDragging({
-            isDragging: true,
+            isDragging: false, // Not until mouse moves enough
             initialX: e.clientX,
             initialY: e.clientY,
             relativeX,
             relativeY,
-            canPlace: true,
-            newCells: shipCellsRef.current,
+            canPlace: true, // Assume it can place until it can't
+            newCells: shipCellsRef.current, // Start with the original cells
         });
 
         window.addEventListener("mousemove", handleMouseMove);
@@ -151,64 +184,30 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
 
     // Mouse up, clean up event listeners
     const handleMouseUp = useCallback(() => {
-        // If the ship was dragged and dropped
-        if (draggingRef.current.isDragging) {
-            console.log("mouse up WITH movement", draggingRef.current);
-            setShips((prevShips) => {
-                return prevShips.map((s) => {
-                    if (s.id === ship.id) {
-                        return {
-                            ...s,
-                            cells: draggingRef.current.newCells,
-                        };
-                    }
-                    return s;
-                });
+        console.log("mouse up WITH movement", draggingRef.current);
+        setShips((prevShips) => {
+            return prevShips.map((s) => {
+                if (s.id === ship.id) {
+                    return {
+                        ...s,
+                        cells: draggingRef.current.newCells,
+                    };
+                }
+                return s;
             });
-            setTopPosition(Math.min(...draggingRef.current.newCells.map((cell) => cell.y)) * cellWidthHeight);
-            setLeftPosition(Math.min(...draggingRef.current.newCells.map((cell) => cell.x)) * cellWidthHeight);
+        });
+        setTopPosition(Math.min(...draggingRef.current.newCells.map((cell) => cell.y)) * cellWidthHeight);
+        setLeftPosition(Math.min(...draggingRef.current.newCells.map((cell) => cell.x)) * cellWidthHeight);
 
-            setDragging({
-                isDragging: false,
-                initialX: null,
-                initialY: null,
-                relativeX: null,
-                relativeY: null,
-                canPlace: null,
-                newCells: [],
-            });
-        } else {
-            // Ship was clicked, rotate its cells
-            console.log("mouse up WITHOUT movement", draggingRef.current);
-
-            // Pivot point is the first cell in the ship, but maybe it should be the center of the ship?
-            const pivot = ship.cells[0];
-
-            // Rotate cells clockwise.
-            // This should try rotate clockwise until it finds a valid rotation or it has tried all possible rotations.
-            // And validate that the rotation is valid.
-            const rotatedCells = ship.cells.map((cell) => {
-                // Calculate new coordinates after rotation
-                return {
-                    x: pivot.x - (cell.y - pivot.y),
-                    y: pivot.y + (cell.x - pivot.x),
-                    state: cell.state,
-                };
-            });
-
-            // Update ships state
-            setShips((prevShips) => {
-                return prevShips.map((s) => {
-                    if (s.id === ship.id) {
-                        return {
-                            ...s,
-                            cells: rotatedCells,
-                        };
-                    }
-                    return s;
-                });
-            });
-        }
+        setDragging({
+            isDragging: false,
+            initialX: null,
+            initialY: null,
+            relativeX: null,
+            relativeY: null,
+            canPlace: null,
+            newCells: [],
+        });
 
         window.removeEventListener("mouseup", handleMouseUp);
         window.removeEventListener("mousemove", handleMouseMove);
@@ -221,6 +220,9 @@ const Ship = ({ shipId, setShips, ship, gameGridRef, ships }) => {
     useEffect(() => {
         shipCellsRef.current = ship.cells;
     }, [ship]);
+    useEffect(() => {
+        currentMapRef.current = currentMap;
+    }, [currentMap]);
 
     // Clean up event listeners on unmount
     useEffect(() => {

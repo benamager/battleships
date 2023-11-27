@@ -24,7 +24,7 @@ const GameGrid: FunctionComponent<GameGridProps> = ({ ships, setShips, grid }) =
             ))}
 
             {/* Render ships */}
-            {ships?.map((ship) => <Ship key={ship.id} ship={ship} ships={ships} shipId={ship.id} setShips={setShips} gameGridRef={gameGridRef} />)}
+            {ships?.map((ship) => <Ship key={ship.id} ship={ship} ships={ships} shipId={ship.id} setShips={setShips} gameGridRef={gameGridRef} currentMap={grid} />)}
         </div>
     );
 };
