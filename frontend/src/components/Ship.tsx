@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from "react";
+import { useRef, RefObject } from "react";
 import cellHasNeighbor from "@/utils/cellHasNeighbor";
 import useShipMove from "@/hooks/interaction/useShipMove";
 import { ShipType } from "@/contexts/ShipsContext";
@@ -6,20 +6,19 @@ import { ShipType } from "@/contexts/ShipsContext";
 const cellWidthHeight = 40;
 
 interface ShipPropsType {
-    shipId: string;
     ship: ShipType;
-    gameGridRef: React.RefObject<HTMLDivElement>;
-    currentMap: { x: number; y: number; value: number }[][];
+    gameGridRef: RefObject<HTMLDivElement>;
 }
 
-const Ship = ({ shipId, ship, gameGridRef, currentMap }: ShipPropsType) => {
+export default function Ship({ ship, gameGridRef }: ShipPropsType) {
     // Calculate width and height of ships container based on the largest x and y values.
     const shipWidth = (Math.max(...ship.cells.map((cell) => cell.x)) - Math.min(...ship.cells.map((cell) => cell.x)) + 1) * cellWidthHeight;
     const shipHeight = (Math.max(...ship.cells.map((cell) => cell.y)) - Math.min(...ship.cells.map((cell) => cell.y)) + 1) * cellWidthHeight;
 
-    const shipContainerRef = useRef<HTMLDivElement>(); // To get bounding client rect
+    // To calculate relativeX and Y in useShipMove
+    const shipContainerRef = useRef<HTMLDivElement>(null);
 
-    const { dragging, handleMouseDown, topPosition, leftPosition } = useShipMove({ currentMap, ship, shipContainerRef, gameGridRef });
+    const { dragging, handleMouseDown, topPosition, leftPosition } = useShipMove({ ship, shipContainerRef, gameGridRef });
 
     return (
         <div
@@ -64,6 +63,4 @@ const Ship = ({ shipId, ship, gameGridRef, currentMap }: ShipPropsType) => {
             })}
         </div>
     );
-};
-
-export default Ship;
+}

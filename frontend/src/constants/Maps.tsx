@@ -1,7 +1,9 @@
-// 2D grid of cells
-// "e" = empty cell (default)
-// "d" = dummy cell (invisible to player)
-// "s" = ship cell (invisible to player), just for collision detection
+/*  All preset of maps in various sizes.
+
+    Inside each array string is our cell value, which is either:
+        - "e" = empty cell
+        - "d" = dummy cell
+*/
 const presetMap1 = [
     ["e", "e", "e", "e", "e", "e", "e", "e", "d", "d"],
     ["d", "d", "e", "e", "e", "e", "e", "e", "e", "e"],

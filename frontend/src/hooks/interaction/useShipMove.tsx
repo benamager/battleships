@@ -1,20 +1,29 @@
-import React, { useEffect, useContext, useRef, useState, useCallback } from "react";
+import React, { useEffect, useContext, useRef, useState, useCallback, MouseEvent } from "react";
 import { ShipsContext } from "@/contexts/ShipsContext";
+import { MapContext } from "@/contexts/MapContext";
 import isMoveValid from "@/utils/isMoveValid";
+import { ShipType } from "@/contexts/ShipsContext";
 
 const cellWidthHeight = 40;
 
-export default function useShipMove({ currentMap, ship, shipContainerRef, gameGridRef, ships }) {
+interface ShipMoveType {
+    ship: ShipType;
+    shipContainerRef: React.RefObject<HTMLDivElement>;
+    gameGridRef: React.RefObject<HTMLDivElement>;
+}
+
+export default function useShipMove({ ship, shipContainerRef, gameGridRef }: ShipMoveType) {
     const { shipsContext, setShipsContext } = useContext(ShipsContext);
+    const { mapContext } = useContext(MapContext);
 
     // Store some information while dragging
     const [dragging, setDragging] = useState({
         isDragging: false,
-        initialX: null,
-        initialY: null,
-        relativeX: null,
-        relativeY: null,
-        canPlace: null,
+        initialX: 0,
+        initialY: 0,
+        relativeX: 0,
+        relativeY: 0,
+        canPlace: 0,
         newCells: [],
     });
     // Ships top and left position based on the smallest x and y values.
@@ -25,16 +34,17 @@ export default function useShipMove({ currentMap, ship, shipContainerRef, gameGr
         useEffects updates them on change */
     const shipCellsRef = useRef(ship.cells);
     const draggingRef = useRef(dragging);
-    const currentMapRef = useRef(currentMap);
+    const mapContextRef = useRef(mapContext);
 
     /*  On mouse move we have two states it can be in visually.
-        - If it can place it will follow the gameGrid cells.
-        - If it can't place it will follow the mouse.
+            - If it can place it will follow the gameGrid cells.
+            - If it can't place it will follow the mouse.
     */
     const handleMouseMove = useCallback(
-        (e) => {
+        (e: React.MouseEvent<HTMLDivElement>) => {
             e.preventDefault();
-            const currentDragging = draggingRef.current; // Use ref to get current dragging state
+
+            const currentDragging = draggingRef.current;
 
             // If not dragging yet
             if (currentDragging.isDragging === false) {
@@ -64,10 +74,7 @@ export default function useShipMove({ currentMap, ship, shipContainerRef, gameGr
             }));
 
             const otherShips = shipsContext.filter((s) => s.id !== ship.id);
-            // grid length and width
-            const gridHeight = currentMapRef.current.length;
-            const gridWidth = currentMapRef.current[0].length;
-            const canPlace = isMoveValid(newCells, otherShips, currentMapRef.current);
+            const canPlace = isMoveValid(newCells, otherShips, mapContextRef.current);
             console.log("can place", canPlace);
 
             // Update dragging state based on canPlace
@@ -159,8 +166,8 @@ export default function useShipMove({ currentMap, ship, shipContainerRef, gameGr
         shipCellsRef.current = ship.cells;
     }, [ship]);
     useEffect(() => {
-        currentMapRef.current = currentMap;
-    }, [currentMap]);
+        mapContextRef.current = mapContext;
+    }, [mapContext]);
 
     // Clean up event listeners on unmount
     useEffect(() => {
