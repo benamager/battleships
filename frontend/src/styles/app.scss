@@ -3,40 +3,6 @@ $game-grid-width-height: 25rem;
 $game-grid-spacing: 0.05rem;
 $game-grid-cell-width-height: calc($game-grid-width-height / 10);
 
-/* Styles for the labels of letters and numbers around the game grid component */
-.game-grid-labels {
-  max-width: fit-content;
-  display: grid;
-  grid-template-columns: 2;
-  grid-template-rows: 2;
-  justify-content: flex-start;
-  user-select: none;
-
-  &__numbers {
-    display: flex;
-    flex-direction: column;
-    grid-row-start: 2;
-    grid-row-end: 2;
-  }
-
-  &__letters {
-    display: flex;
-    grid-column-start: 2;
-    grid-column-end: 2;
-  }
-  
-  // Labels itself
-  &__label {
-    width: $game-grid-cell-width-height;
-    height: $game-grid-cell-width-height;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.875rem;
-  }
-}
-
-
 /*  Styles for our main game grid (ocean)
     which is the 2D array of cells that the player clicks on to place their ships */
 .game-grid {

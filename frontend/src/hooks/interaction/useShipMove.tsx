@@ -1,10 +1,43 @@
-import React, { useEffect, useContext, useRef, useState, useCallback, MouseEvent } from "react";
+import React, { useEffect, useContext, useRef, useState, useReducer, useCallback, MouseEvent } from "react";
 import { ShipsContext } from "@/contexts/ShipsContext";
 import { MapContext } from "@/contexts/MapContext";
 import isMoveValid from "@/utils/isMoveValid";
 import { ShipType } from "@/contexts/ShipsContext";
+import useRotateShip from "@/hooks/interaction/useRotateShip";
 
 const cellWidthHeight = 40;
+
+// Define the state structure
+interface StateType {
+    topPosition: number;
+    leftPosition: number;
+}
+
+// Define action types
+type ActionType = { type: "UPDATE_POSITION"; payload: { cells: { x: number; y: number }[] } } | { type: "SET_DIRECT_POSITION"; payload: { top: number; left: number } };
+
+// Reducer function with types
+function reducer(state: StateType, action: ActionType): StateType {
+    switch (action.type) {
+        case "UPDATE_POSITION":
+            const newTop = Math.min(...action.payload.cells.map((cell) => cell.y)) * cellWidthHeight;
+            const newLeft = Math.min(...action.payload.cells.map((cell) => cell.x)) * cellWidthHeight;
+
+            return {
+                ...state,
+                topPosition: newTop,
+                leftPosition: newLeft,
+            };
+        case "SET_DIRECT_POSITION":
+            return {
+                ...state,
+                topPosition: action.payload.top,
+                leftPosition: action.payload.left,
+            };
+        default:
+            throw new Error();
+    }
+}
 
 interface ShipMoveType {
     ship: ShipType;
@@ -16,6 +49,21 @@ export default function useShipMove({ ship, shipContainerRef, gameGridRef }: Shi
     const { shipsContext, setShipsContext } = useContext(ShipsContext);
     const { mapContext } = useContext(MapContext);
 
+    const rotateShip = useRotateShip(ship);
+
+    const initialState = {
+        topPosition: Math.min(...ship.cells.map((cell) => cell.y)) * cellWidthHeight,
+        leftPosition: Math.min(...ship.cells.map((cell) => cell.x)) * cellWidthHeight,
+    };
+    const [state, dispatch] = useReducer(reducer, initialState);
+
+    useEffect(() => {
+        dispatch({
+            type: "UPDATE_POSITION",
+            payload: { cells: ship.cells },
+        });
+    }, [ship]);
+
     // Store some information while dragging
     const [dragging, setDragging] = useState({
         isDragging: false,
@@ -23,12 +71,9 @@ export default function useShipMove({ ship, shipContainerRef, gameGridRef }: Shi
         initialY: 0,
         relativeX: 0,
         relativeY: 0,
-        canPlace: 0,
+        canPlace: true,
         newCells: [],
     });
-    // Ships top and left position based on the smallest x and y values.
-    const [topPosition, setTopPosition] = useState(Math.min(...ship.cells.map((cell) => cell.y)) * cellWidthHeight);
-    const [leftPosition, setLeftPosition] = useState(Math.min(...ship.cells.map((cell) => cell.x)) * cellWidthHeight);
 
     /*  Storing states in ref for access in event listeners
         useEffects updates them on change */
@@ -90,16 +135,19 @@ export default function useShipMove({ ship, shipContainerRef, gameGridRef }: Shi
                 const gridRect = gameGridRef.current.getBoundingClientRect();
                 const relativeTop = e.clientY - gridRect.top - currentDragging.relativeY;
                 const relativeLeft = e.clientX - gridRect.left - currentDragging.relativeX;
-                setTopPosition(relativeTop);
-                setLeftPosition(relativeLeft);
+                dispatch({
+                    type: "SET_DIRECT_POSITION",
+                    payload: { top: relativeTop, left: relativeLeft },
+                });
             }
 
             if (canPlace === true) {
                 console.log("can place, follow grid");
-                setTopPosition(Math.min(...newCells.map((cell) => cell.y)) * cellWidthHeight);
-                setLeftPosition(Math.min(...newCells.map((cell) => cell.x)) * cellWidthHeight);
-
                 setDragging((prevState) => ({ ...prevState, newCells: newCells }));
+                dispatch({
+                    type: "UPDATE_POSITION",
+                    payload: { cells: newCells },
+                });
             }
         },
         [draggingRef, shipCellsRef, cellWidthHeight, gameGridRef, shipsContext],
@@ -129,7 +177,30 @@ export default function useShipMove({ ship, shipContainerRef, gameGridRef }: Shi
 
     // Mouse up, clean up event listeners
     const handleMouseUp = useCallback(() => {
-        console.log("mouse up WITH movement", draggingRef.current);
+        if (draggingRef.current.isDragging === false) {
+            console.log("mouse up without movement");
+            rotateShip();
+
+            dispatch({
+                type: "UPDATE_POSITION",
+                payload: { cells: draggingRef.current.newCells },
+            });
+
+            setDragging({
+                isDragging: false,
+                initialX: 0,
+                initialY: 0,
+                relativeX: 0,
+                relativeY: 0,
+                canPlace: true,
+                newCells: [],
+            });
+
+            console.log("Ship rotated");
+            return;
+        }
+
+        console.log("mouse up with movement");
         setShipsContext((prevShips) => {
             return prevShips.map((s) => {
                 if (s.id === ship.id) {
@@ -141,16 +212,14 @@ export default function useShipMove({ ship, shipContainerRef, gameGridRef }: Shi
                 return s;
             });
         });
-        setTopPosition(Math.min(...draggingRef.current.newCells.map((cell) => cell.y)) * cellWidthHeight);
-        setLeftPosition(Math.min(...draggingRef.current.newCells.map((cell) => cell.x)) * cellWidthHeight);
 
         setDragging({
             isDragging: false,
-            initialX: null,
-            initialY: null,
-            relativeX: null,
-            relativeY: null,
-            canPlace: null,
+            initialX: 0,
+            initialY: 0,
+            relativeX: 0,
+            relativeY: 0,
+            canPlace: true,
             newCells: [],
         });
 
@@ -161,7 +230,7 @@ export default function useShipMove({ ship, shipContainerRef, gameGridRef }: Shi
     // Update draggingRef whenever dragging changes
     useEffect(() => {
         draggingRef.current = dragging;
-    }, [dragging]);
+    }, [dragging, ship]);
     useEffect(() => {
         shipCellsRef.current = ship.cells;
     }, [ship]);
@@ -178,5 +247,5 @@ export default function useShipMove({ ship, shipContainerRef, gameGridRef }: Shi
         };
     }, [handleMouseUp, handleMouseMove]);
 
-    return { topPosition, leftPosition, handleMouseDown, handleMouseUp, handleMouseMove, dragging };
+    return { handleMouseDown, handleMouseUp, handleMouseMove, dragging, topPosition: state.topPosition, leftPosition: state.leftPosition };
 }
