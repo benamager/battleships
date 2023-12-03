@@ -1,5 +1,7 @@
-// Function to check if a neighboring cell exists in the ship
-export default function cellHasNeighbor(ship, cell, direction) {
+import { ShipType, ShipCellType } from "@/contexts/ShipsContext";
+
+// Function to check if a neighboring cell exists for the ship
+export default function shipCellHasNeighbor(ship: ShipType, cell: ShipCellType, direction: "left" | "right" | "top" | "bottom") {
   if (direction === "left") {
       return ship.cells.some((c) => c.x === cell.x - 1 && c.y === cell.y);
   } else if (direction === "right") {

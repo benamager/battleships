@@ -1,8 +1,9 @@
 import { useContext } from "react";
 import { ShipsContext } from "@/contexts/ShipsContext";
 import { MapContext } from "@/contexts/MapContext";
-import isMoveValid from "@/utils/isMoveValid";
+import isPositionValid from "@/utils/isPositionValid";
 import { ShipType } from "@/contexts/ShipsContext";
+import rotateShipCells from "@/utils/rotateShipCells";
 
 export default function useRotateShip(ship: ShipType) {
     const { shipsContext, setShipsContext } = useContext(ShipsContext);
@@ -16,15 +17,11 @@ export default function useRotateShip(ship: ShipType) {
                 if (s.id === ship.id) {
                     // Try rotating around each cell of the ship
                     for (let i = 0; i < s.cells.length; i++) {
-                        const pivot = s.cells[i];
-                        const newCells = s.cells.map((cell) => ({
-                            x: pivot.x + cell.y - pivot.y,
-                            y: pivot.y + cell.x - pivot.x,
-                        }));
+                        const newCells = rotateShipCells(s.cells, i);
 
                         const otherShips = shipsContext.filter((s) => s.id !== ship.id);
 
-                        if (isMoveValid(newCells, otherShips, mapContext)) {
+                        if (isPositionValid(newCells, otherShips, mapContext)) {
                             if (Object.keys(newCells).length === 0 && Object.keys(newCells).length !== Object.keys(s.cells).length) {
                                 console.log("No valid rotation options available");
                                 return s;

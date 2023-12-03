@@ -1,7 +1,7 @@
 import React, { useEffect, useContext, useRef, useState, useReducer, useCallback, MouseEvent } from "react";
 import { ShipsContext } from "@/contexts/ShipsContext";
 import { MapContext } from "@/contexts/MapContext";
-import isMoveValid from "@/utils/isMoveValid";
+import isPositionValid from "@/utils/isPositionValid";
 import { ShipType } from "@/contexts/ShipsContext";
 import useRotateShip from "@/hooks/interaction/useRotateShip";
 
@@ -119,7 +119,7 @@ export default function useShipMove({ ship, shipContainerRef, gameGridRef }: Shi
             }));
 
             const otherShips = shipsContext.filter((s) => s.id !== ship.id);
-            const canPlace = isMoveValid(newCells, otherShips, mapContextRef.current);
+            const canPlace = isPositionValid(newCells, otherShips, mapContextRef.current);
             console.log("can place", canPlace);
 
             // Update dragging state based on canPlace

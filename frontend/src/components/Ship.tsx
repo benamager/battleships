@@ -1,5 +1,5 @@
 import { useRef, RefObject } from "react";
-import cellHasNeighbor from "@/utils/cellHasNeighbor";
+import shipCellHasNeighbor from "@/utils/shipCellHasNeighbor";
 import useShipMove from "@/hooks/interaction/useShipMove";
 import { ShipType } from "@/contexts/ShipsContext";
 
@@ -32,13 +32,13 @@ export default function Ship({ ship, gameGridRef }: ShipPropsType) {
             }}
         >
             {ship.cells.map((cell, index) => {
-                const borderColor = dragging.isDragging ? "green" : "#0022ff";
+                const borderColor = dragging.canPlace ? (dragging.isDragging ? "green" : "#0022ff") : "rgba(255, 0, 0, 0.8)";
 
                 // Determine which borders to apply based on neighboring cells
-                const borderTop = cellHasNeighbor(ship, cell, "top") ? "none" : `2px solid ${borderColor}`;
-                const borderBottom = cellHasNeighbor(ship, cell, "bottom") ? "none" : `2px solid ${borderColor}`;
-                const borderLeft = cellHasNeighbor(ship, cell, "left") ? "none" : `2px solid ${borderColor}`;
-                const borderRight = cellHasNeighbor(ship, cell, "right") ? "none" : `2px solid ${borderColor}`;
+                const borderTop = shipCellHasNeighbor(ship, cell, "top") ? "none" : `2px solid ${borderColor}`;
+                const borderBottom = shipCellHasNeighbor(ship, cell, "bottom") ? "none" : `2px solid ${borderColor}`;
+                const borderLeft = shipCellHasNeighbor(ship, cell, "left") ? "none" : `2px solid ${borderColor}`;
+                const borderRight = shipCellHasNeighbor(ship, cell, "right") ? "none" : `2px solid ${borderColor}`;
 
                 let backgroundColor = "rgba(0, 0, 255, 0.2)";
                 if (dragging.isDragging) backgroundColor = "rgba(0, 255, 0, 0.2)";

@@ -1,11 +1,14 @@
-export default function isWithinBounds(shipCells, grid) {
+import { ShipCellType } from "@/contexts/ShipsContext";
+import { MapType } from "@/contexts/MapContext";
+
+export default function isWithinBounds(shipCells: ShipCellType[], currentMap: MapType) {
   return shipCells.every((cell) => {
       // Check if cell coordinates are within the grid boundaries
-      if (cell.y < 0 || cell.y >= grid.length || cell.x < 0 || cell.x >= grid[cell.y].length) {
+      if (cell.y < 0 || cell.y >= currentMap.length || cell.x < 0 || cell.x >= currentMap[cell.y].length) {
           return false;
       }
 
       // Check if the cell in the grid is empty
-      return grid[cell.y][cell.x] === "e";
+      return currentMap[cell.y][cell.x] === "e";
   });
 }

@@ -9,7 +9,7 @@ export default function App() {
             <ShipsContextProvider>
                 <main className="flex flex-col">
                     <h1>Battleship</h1>
-                    <div className="flex gap-5 mx-auto">
+                    <div className="flex gap-11 mx-auto">
                         <GameGrid />
                     </div>
                 </main>
