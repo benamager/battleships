@@ -40,5 +40,17 @@ const presetMap3 = [
     ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
     ["e", "e", "d", "d", "e", "e", "e", "d", "d", "e", "e"],
 ];
+const presetMap4 = [
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+    ["e", "e", "e", "e", "e", "e", "e", "e", "e", "e"],
+];
 
-export const maps = [presetMap1, presetMap2, presetMap3];
+export const maps = [presetMap1, presetMap2, presetMap3, presetMap4];

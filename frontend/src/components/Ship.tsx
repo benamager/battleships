@@ -57,6 +57,7 @@ export default function Ship({ ship, gameGridRef }: ShipPropsType) {
                             borderLeft,
                             borderRight,
                             backgroundColor,
+                            zIndex: dragging.isDragging ? 1 : 0,
                         }}
                     />
                 );
